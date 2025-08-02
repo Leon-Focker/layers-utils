@@ -46,4 +46,6 @@
 	       state)
     (rewind rn 0)))
 
+(export '(random) :layers-utils)
+
 ;;;; EOF random.lsp

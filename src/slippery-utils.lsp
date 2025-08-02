@@ -43,13 +43,13 @@
 
 |#
 ;;; SYNOPSIS
-(defun read-from-file (file)
+(defpublic read-from-file (file)
 ;;; ****
   (with-open-file
       (stream file :direction :input :if-does-not-exist :error)
     (read stream)))
 
-(defun write-to-file (file data)
+(defpublic write-to-file (file data)
 ;;; ****
   (with-open-file
       (stream file :direction :output :if-exists :supersede
@@ -58,7 +58,7 @@
 
 ;; *** force-list
 
-(defun force-list (thing)
+(defpublic force-list (thing)
   ;; MDE Thu Oct 1 16:47:36 2015 -- added (when thing ...) so that we don't
   ;; force NIL into a list
   (when thing
@@ -107,7 +107,7 @@
 
 |#
 ;;; SYNOPSIS
-(defun flatten (nested-list)
+(defpublic flatten (nested-list)
 ;;; ****
   (cond ((null nested-list) nil)
         ((atom nested-list) (list nested-list))
@@ -139,7 +139,7 @@
 
 |#
 ;;; SYNOPSIS
-(defun almost-flatten (nested-list)
+(defpublic almost-flatten (nested-list)
 ;;; ****
 ;;; ****
   (cond ((null nested-list) nil)
@@ -182,7 +182,7 @@
 ==> 50.0
 |#
 ;;; SYNOPSIS
-(defun rescale (val min max new-min new-max &optional (out-of-range #'error)
+(defpublic rescale (val min max new-min new-max &optional (out-of-range #'error)
                                               (type-of-result #'float))
 ;;; ****
   (flet ((oor () ; in case we need to call it on more than one occasion...
@@ -258,7 +258,7 @@
        (nth (decider (random 1.0) weights) ls)))
 |#
 ;;; SYNOPSIS
-(defun decider (selector weights)
+(defpublic decider (selector weights)
 ;;; ****  
   (labels ((helper (selector ls1 index sum)
              (cond ((null ls1) (1- (length weights)))
@@ -318,7 +318,7 @@
 
 |#
 ;;; SYNOPSIS
-(defun equal-within-tolerance (a b &optional (tolerance 0.000001d0))
+(defpublic equal-within-tolerance (a b &optional (tolerance 0.000001d0))
 ;;; ****
   (when (and (numberp a) (numberp b))
     ;; BTW coercing a and b to 'double-float doesn't help if they are of
@@ -363,7 +363,7 @@
    :scale nil :abs t :y-range 1)
 |#
 ;;; SYNOPSIS
-(defun visualize (ls &key y-range (start 0) abs (scale t))
+(defpublic visualize (ls &key y-range (start 0) abs (scale t))
 ;;; ****
   (when (arrayp ls)
     (setf ls (loop for i across ls collect i)))
@@ -420,7 +420,7 @@
 ;;; a pathname - to a directory without filename and type
 ;;;
 ;;; SYNOPSIS
-(defun agnostic-directory-pathname (namestring)
+(defpublic agnostic-directory-pathname (namestring)
 ;;; ****
   (make-pathname :directory  (pathname-directory namestring)
                  :device (pathname-device namestring)))
@@ -560,7 +560,7 @@
 
 ;; *** lastx
 
-(defun lastx (env)
+(defpublic lastx (env)
   "lastx returns the last x value in the given envelope.
    e.g. (lastx '(0 0 20 4 30 5 100 0)) => 100"
   (unless env
@@ -665,7 +665,7 @@
                        (* scaler (nth (+ here 1) env))
                        exp)))))
 
-(defun interpolate (point env &key (scaler 1) (exp 1) (warn t))
+(defpublic interpolate (point env &key (scaler 1) (exp 1) (warn t))
 ;;; ****
   "e.g. (interpolate 50 '(0 0 100 1) :scaler .5 :exp 2)
    => 0.0625
@@ -758,7 +758,7 @@
 
 |#
 ;;; SYNOPSIS
-(defun scale-env (env y-scaler &key x-scaler first-x last-x
+(defpublic scale-env (env y-scaler &key x-scaler first-x last-x
                                  (x-min most-negative-double-float)
                                  (y-min most-negative-double-float)
                                  (x-max most-positive-double-float)
@@ -810,7 +810,7 @@
   (* midi-note (/ (degrees-per-octave scale) 12)))
 
 #+cm
-(defun midi-to-note (midi-note &optional (scale cm::*scale*))
+(defpublic midi-to-note (midi-note &optional (scale cm::*scale*))
 ;;; ****
   ;; (degree-to-note midi-note cm::*chromatic-scale*))
   (degree-to-note (midi-to-degree midi-note scale) scale))
@@ -824,7 +824,7 @@
   (cm::keynum (intern (string note) :cm) :in scale))
 
 #+cm
-(defun note-to-midi (note)
+(defpublic note-to-midi (note)
 ;;; ****
   (note-to-degree note cm::*chromatic-scale*))
 

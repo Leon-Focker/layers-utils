@@ -73,4 +73,6 @@
 	     (id lt) (data lt)))
   t)
 
+(export '(list-thingy) :layers-utils)
+
 ;;;; EOF list-thingy.lsp

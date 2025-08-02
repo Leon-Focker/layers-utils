@@ -41,7 +41,7 @@
 (defpublic make-lindenmayer-layers (seed rules ratios
 					 &key id
 					 (duration 10)
-					 (generation-method 'lindenmayer)
+					 (generation-method 'compartmentalise)
 					 (smallest 0.01))
   ;; make-instance
   (make-instance 'lindenmayer-layers

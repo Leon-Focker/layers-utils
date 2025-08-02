@@ -11,6 +11,6 @@
 (defmethod print-object ((thy thingy) stream)
   (format stream "<Thingy ~a>" (id thy)))
 
-(export '(id data) :layers-utils)
+(export '(thingy id data) :layers-utils)
 
 ;;;; EOF thingy.lsp

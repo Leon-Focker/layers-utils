@@ -1,4 +1,4 @@
-;; ** suondpile
+;; ** soundpile
 
 (in-package :layers-utils)
 
@@ -12,7 +12,7 @@
     (error "data in soundpile is not a list: ~a" (data sp)))
   (unless
       (loop for sf in (data sp)
-	    always (and (equal 'soundfile (type-of sf))
+	    always (and (typep sf 'soundfile)
 			(check-sanity sf #'error)))
     (error "not all elements in this soundpiles data (~a) are sane soundfiles!"
 	   (id sp))))
@@ -106,7 +106,7 @@
 (defpubmethod check-sanity ((sp soundpile) &optional (error-fun #'warn))
   (unless
       (loop for sf in (data sp)
-	    always (and (equal (type-of sf) 'soundfile)
+	    always (and (typep sf 'soundfile)
 			(check-sanity sf error-fun)))
     (funcall error-fun "check-sanity: not all elements of soundpile ~a are ~
                         sane soundfiles!"
@@ -131,6 +131,8 @@
 			   *layers-utils-src-dir* (id sp)))))
     (write-to-file file (make-load-form sp))
     (format t "~&wrote ~a into ~a" (id sp) file)))
+
+(export '(soundpile) :layers-utils)
 
 ;; EOF soundpile.lsp
 

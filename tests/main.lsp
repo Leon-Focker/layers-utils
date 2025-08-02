@@ -349,12 +349,12 @@
      
    (fplay-to-wav file
      (fplay 0 5
-       (file (layers-utils-path "tests/1000.wav"))
+       (file (layers-utils-tests-path "1000.wav"))
        (rhythm "1 then .5")
        (duration (/ rhythm 4))
        (amp-env `(0 1  1 ,(- 1 (expt line 0.5))))
        (srt 1 1.1)))
-    (is (file-write-ok file 2000000))
+    (is (file-write-ok file 1900000))
     (probe-delete file)
     ))
 
@@ -395,6 +395,7 @@
     (store-in-text-file sp file)
     (setf sp (load-from-file file))
     (is (check-sanity sp))
+    ;; how many soundfiles are in the tests directory
     (is (= 6 (length (get-all 'id sp))))
     (probe-delete file)))
 

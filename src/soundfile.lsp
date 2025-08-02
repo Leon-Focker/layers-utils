@@ -178,7 +178,7 @@
     (write-to-file file (make-load-form sf))
     (format t "~&wrote ~a into ~a" (id sf) file)))
 
-(export '(name path duration total-samples samplerate peak peak-index
+(export '(soundfile name path duration total-samples samplerate peak peak-index
 	  centroid spread flatness dominant-frequency smoothness transient)
 	:layers-utils)
 
