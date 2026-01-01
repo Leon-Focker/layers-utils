@@ -37,6 +37,8 @@
   (handler-bind ((warning
 		   #'quiet-warning-handler))
     (load (compile-file (format nil "~a~a" *layers-utils-src-dir* "analysis.lsp")))
+    ;; some basic instruments I built years ago
+    (load (compile-file (format nil "~a~a" *layers-utils-src-dir* "basic-instruments.lsp")))
     ;; Michael Edwards samp1 instrument, but modified so you can select the
     ;; input channel. It would also be possible to use samp5 (slippery chicken).
     (load (compile-file (format nil "~a~a" *layers-utils-src-dir* "samp0.ins")))
