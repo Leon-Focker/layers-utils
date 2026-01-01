@@ -71,6 +71,8 @@
 ;;; Also with longer midi files there seems to be some minor timing errors that
 ;;; build up? Probably stems from the cm::import-events funktion
 (defpublic midi-file-to-list (file &optional track)
+  (unless (probe-file file)
+    (error "midi-file-to-list: file not found: ~a" file))
   (let* ((cm-midi (cm::parse-midi-file file track)))
     (remove nil
 	    (loop for m in cm-midi

@@ -330,7 +330,8 @@
 ;;;     'sound and 'soundpile variables can be ignored when just providing 'file
 ;;;     with a path.
 ;;;   - sound: A soundfile-object. Initially defined as (first (data soundpile))
-;;;   - soundpile: A soundpile-object. Initially defined as TODO
+;;;   - soundpile: A soundpile-object. Initially defined with a 220Hz and 440Hz
+;;;     sine sample.
 ;;;   - printing: when t, print sound, duration and time for instrument call.
 ;;;   - out-channels: how many channels the soundfile will have. If not 
 ;;;     specified this will be 2. For more than two channels locsig assumes them
