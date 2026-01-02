@@ -9,6 +9,9 @@
    (state :accessor state :initform 0 :type integer)
    (pcg :accessor pcg :initarg :pcg :initform (pcg::make-pcg) :type pcg:pcg)))
 
+(defmethod print-object ((rn random-number) stream)
+  (format stream "<Random Number ~a, Data: ~a>" (id rn) (data rn)))
+
 ;; *** random-number
 ;;; make an instance of random-number
 (defpublic make-random-number (&optional (seed (random 100)))
@@ -28,10 +31,10 @@
 ;; *** get-next
 ;;; get a random-number object to the next pseudo random number
 (defpubmethod get-next ((rn random-number))
-  (setf (data rn)
-	(pcg::pcg-random (pcg rn) 1.0)
-	(state rn)
-	(pcg::pcg-state (pcg rn))))
+  (setf (state rn)
+	(pcg::pcg-state (pcg rn))
+	(data rn)
+	(pcg::pcg-random (pcg rn) 1.0)))
 
 ;; *** rewind
 ;;; go to the nth last number
