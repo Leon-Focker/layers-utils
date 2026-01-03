@@ -287,6 +287,7 @@
 ;; *** get-spectral-centroid
 ;;; calulate the spectral centroid out of a list of frequency-magnitude pairs
 ;;; eq.: '((440 0.5) (630 0.46) (880 0.25))
+;;; TODO this is different from the method used in #'analyse-soundfile
 (defpublic get-spectral-centroid (list-of-pairs)
   (let ((centroid 1))
     (loop for pair in list-of-pairs
@@ -294,6 +295,59 @@
        sum (cadr pair) into sum2
        do (setf centroid (/ sum1 sum2)))
     centroid))
+
+;; *** parabolic-peak-offset
+;;; Given three y-values (y-1, y0 and y+1) that describe a curve, calculate the
+;;; x-value at which this curve hits a maximum relative to x0.
+;;; Example: (parabolic-peak-offset 1 2 0) -> -1/6
+(defpublic parabolic-peak-offset (y-1 y0 y+1)
+  (/ (- y-1 y+1)
+     (* 2 (- y-1 (* 2 y0) y+1))))
+
+;; *** harmonic-score
+;;; Sum all magnitudes of the harmonics of i, do this for multiple i and
+;;; compare; higher scores mean higher likelyhood of i being a fundamental.
+(defun harmonic-score (mags i &optional (max-h 10))
+  (loop for h from 1 to max-h
+	for idx = (* i h)
+	while (< idx (length mags))
+        sum (aref mags idx)))
+
+;; *** harmonic-product-spectrum
+;;; Very simple monophonic pitch detection from a list of magnitudes and the
+;;; base-frequency of the first bin. Returns a frequency.
+(defpublic harmonic-product-spectrum (list-of-mags base-freq)
+  (let* ((n (length list-of-mags))
+	 (mags (make-array n :initial-contents list-of-mags))
+	 (result (copy-seq mags))
+	 (max-h 5)
+	 (peak-idx 0))
+    ;; scale values
+    (map-into mags #'(lambda (x) (log (+ 1e-9 x))) mags)
+    ;; reduce spectrum and add harmonics to result vector
+    (loop for h from 2 to max-h do
+      (loop for i from 0 below (/ n h) do
+	;; dividing by h again adds a bias towards lower freqs
+	(incf (aref result i) (/ (aref mags (* i h)) h))))
+    ;; find index of peak
+    (loop with peak-val = 0
+	  for i from 0 below n do
+	    (when (> (aref result i) peak-val)
+	      (setf peak-idx i peak-val (aref result i))))
+    ;; check whether found peak could actually be second or third partial
+    (loop for idx in (list peak-idx (floor peak-idx 2) (floor peak-idx 3))
+	  with best-score = 0 do
+	    (when (> (harmonic-score mags idx) best-score)
+	      (setf peak-idx idx)))
+    ;; calculate frequency
+    (* (if (or (= peak-idx 0) (= peak-idx (1- n)))
+	   peak-idx
+	   (+ (parabolic-peak-offset
+	       (aref mags (1- peak-idx))
+	       (aref mags peak-idx)
+	       (aref mags (1+ peak-idx)))
+	      peak-idx))
+       base-freq)))
 
 ;; *** taylor-polynom
 ;;; TODO
