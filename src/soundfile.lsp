@@ -17,15 +17,21 @@
    (peak :accessor peak :initarg :peak :initform nil)
    (peak-index :accessor peak-index :initarg :peak-index :initform 0)
    ;; analysed, not user set data:
+
+   ;; TODO these should be lists of values, resulting from multiple fft frames
    ;; spectral centroid
-   (centroid :accessor centroid :initarg :centroid :initform nil)
+   (centroid :accessor centroid :initarg :centroid :initform '())
    ;; spectral spread
-   (spread :accessor spread :initarg :spread :initform nil)
+   (spread :accessor spread :initarg :spread :initform '())
    ;; spectral flatness
-   (flatness :accessor flatness :initarg :flatness :initform nil)
+   (flatness :accessor flatness :initarg :flatness :initform '())
    ;; dominant frequency
    (dominant-frequency :accessor dominant-frequency :initarg :dominant-frequency
-		       :initform nil)
+		       :initform '())
+   ;; (estimated) pitch, fundamental frequency 
+   (fundamental-frequency  :accessor fundamental-frequency
+			   :initarg :fundamental-frequency :initform '())
+   
    ;; envelope smoothness
    (smoothness :accessor smoothness :initarg :smoothness :initform nil)
    ;; biggest jump up in the envelope
@@ -35,9 +41,13 @@
   (format stream "<SOUNDFILE ~a>" (id sf)))
 
 ;; *** spectral-analysis
-;;; dominant frequency, centroid, flatness and spread of soundfile.
-;;; file can either be an array or the path to a file.
+;;; dominant frequency, centroid, flatness, spread and estimated pitch of
+;;; soundfile.
+;;; - file: can either be an array or the path to a file.
 ;;; TODO would be more fun to get more than one fft frame...
+
+;;; - divide into frames (overlapping?), window them (done), analyse them, ...
+
 ;;;   also getting a dominant-frequency is kinda wonky when the base-freq
 ;;;   doesn't match the root harmonic of the file.
 #+clm
@@ -56,7 +66,6 @@
 								 (> num sample-len))
 			     finally (return (expt 2 (- i 2)))
 			     do (setf num (* num 2)))))
-	 ;; by repeating fft-size/4 times we take into account freqs up to 12kHz
 	 (repeats (/ fft-size 4))
 	 (base-freq (/ srate fft-size))
 	 (arithmetic-mean 0)
@@ -65,13 +74,13 @@
 	 (b 0)
 	 (c 0)
 	 (d 0)
-	 (e '(0 0))
+	 (dom-freq '(0 0))
 	 (m '()))
     (setf m (clm::fft-from-file file
 				:fft-size fft-size
 				:window window))
     (loop for i from 0 and j in m repeat repeats do
-      (when (> j (car e)) (setf e (list j (* i base-freq 1.0))))
+      (when (> j (car dom-freq)) (setf dom-freq (list j (* i base-freq 1.0))))
       (incf a (* i base-freq (expt j 2)))
       (incf b (expt j 2))
       (incf arithmetic-mean j)
@@ -86,7 +95,8 @@
 	    (sqrt (/ d b))		; spread
 	    (/ geometric-mean		; flatness
 	       arithmetic-mean)
-	    (cadr e)			; dominant frequency
+	    (cadr dom-freq)		; dominant frequency
+	    (harmonic-product-spectrum m base-freq) ; fundamental frequency 
 	    )))
 
 ;; *** analyse-soundfile
@@ -96,12 +106,13 @@
   (let* ((array (clm::table-from-file (path sf)))
 	 (envelope (clm::envelope-follower array))
 	 (max (max-of-array-with-index array t)))
-    (multiple-value-bind (c s f d)
+    (multiple-value-bind (c s f d p)
 	     (spectral-analysis array :fft-size fft-size :srate srate)
 	   (setf (centroid sf) c
 		 (spread sf) s
 		 (flatness sf) f
-		 (dominant-frequency sf) d))
+		 (dominant-frequency sf) d
+		 (fundamental-frequency  sf) p))
     (setf (peak sf) (first max))
     (setf (peak-index sf) (second max))
     (setf (smoothness sf) (flatness-of-list envelope))
