@@ -217,7 +217,8 @@
     (format t "~&wrote ~a into ~a" (id sf) file)))
 
 (export '(soundfile name path duration total-samples samplerate peak peak-index
-	  centroid spread flatness dominant-frequency smoothness transient)
+	  centroid spread flatness dominant-frequency fundamental-frequency
+	  smoothness transient)
 	:layers-utils)
 
 ;;;; EOF soundfile.lsp
