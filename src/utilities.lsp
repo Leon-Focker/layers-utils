@@ -316,38 +316,49 @@
 ;; *** harmonic-product-spectrum
 ;;; Very simple monophonic pitch detection from a list of magnitudes and the
 ;;; base-frequency of the first bin. Returns a frequency.
-(defpublic harmonic-product-spectrum (list-of-mags base-freq)
+(defpublic harmonic-product-spectrum (list-of-mags
+				      base-freq
+				      &optional (max-freq 2000))
   (let* ((n (length list-of-mags))
 	 (mags (make-array n :initial-contents list-of-mags))
+	 (max-bin (min (1- n) (floor (/ max-freq base-freq))))
 	 (result (copy-seq mags))
 	 (max-h 5)
-	 (peak-idx 0))
-    ;; scale values
-    (map-into mags #'(lambda (x) (log (+ 1e-9 x))) mags)
+	 peak-idx)
     ;; reduce spectrum and add harmonics to result vector
     (loop for h from 2 to max-h do
-      (loop for i from 0 below (/ n h) do
-	;; dividing by h again adds a bias towards lower freqs
+      (loop for i from 0 below (min max-bin (/ n h)) do
+	;; dividing by h again adds a bias towards original spectrum
 	(incf (aref result i) (/ (aref mags (* i h)) h))))
     ;; find index of peak
-    (loop with peak-val = 0
-	  for i from 0 below n do
-	    (when (> (aref result i) peak-val)
-	      (setf peak-idx i peak-val (aref result i))))
-    ;; check whether found peak could actually be second or third partial
-    (loop for idx in (list peak-idx (floor peak-idx 2) (floor peak-idx 3))
-	  with best-score = 0 do
-	    (when (> (harmonic-score mags idx) best-score)
-	      (setf peak-idx idx)))
-    ;; calculate frequency
-    (* (if (or (= peak-idx 0) (= peak-idx (1- n)))
-	   peak-idx
-	   (+ (parabolic-peak-offset
-	       (aref mags (1- peak-idx))
-	       (aref mags peak-idx)
-	       (aref mags (1+ peak-idx)))
-	      peak-idx))
-       base-freq)))
+    (loop for i from 1 below max-bin
+	  for val across result
+	  with peak-val = (aref result 0) do
+	    (when (> val peak-val)
+	      (setf peak-idx i peak-val val)))
+    ;; ;; debugging
+    ;; (plot-points (loop for i from 0 and m across mags
+    ;; 		       collect (list (* i base-freq 1.0) m))
+    ;; 		 t t)
+    ;; (plot-points (loop for i from 0 and m across result
+    ;; 		       collect (list (* i base-freq 1.0) m))
+    ;; 		 t t)
+    (when peak-idx
+      ;; check whether found peak could actually be second or third partial
+      (loop for idx in (list peak-idx (floor peak-idx 2) (floor peak-idx 3))
+	    with mag-threshold = (* (aref mags peak-idx) 0.3)
+	    with best-score = (harmonic-score mags peak-idx) do
+	      (when (and (> idx 0)
+			 (> (aref mags idx) mag-threshold)
+			 (> (harmonic-score mags idx) best-score))
+		(setf peak-idx idx)))
+      ;; calculate frequency
+      (let* ((offset (parabolic-peak-offset
+		      (aref mags (1- peak-idx))
+		      (aref mags peak-idx)
+		      (aref mags (1+ peak-idx)))))
+	(when (> (abs offset) 1) (setf offset 0.0))
+	(* (+ offset peak-idx) base-freq)))))
 
 ;; *** taylor-polynom
 ;;; TODO

@@ -18,17 +18,18 @@
    (peak-index :accessor peak-index :initarg :peak-index :initform 0)
    ;; analysed, not user set data:
    ;; spectral centroid
-   (centroid :accessor centroid :initarg :centroid :initform '())
+   (centroid :accessor centroid :initarg :centroid :initform nil)
    ;; spectral spread
-   (spread :accessor spread :initarg :spread :initform '())
+   (spread :accessor spread :initarg :spread :initform nil)
    ;; spectral flatness
-   (flatness :accessor flatness :initarg :flatness :initform '())
+   (flatness :accessor flatness :initarg :flatness :initform nil)
    ;; dominant frequency
    (dominant-frequency :accessor dominant-frequency :initarg :dominant-frequency
-		       :initform '())
+		       :initform nil)
    ;; (estimated) pitch, fundamental frequency 
-   (fundamental-frequency  :accessor fundamental-frequency
-			   :initarg :fundamental-frequency :initform '())
+   (fundamental-frequency :accessor fundamental-frequency
+			  :initarg :fundamental-frequency
+			  :initform nil)
    ;; envelope smoothness
    (smoothness :accessor smoothness :initarg :smoothness :initform nil)
    ;; biggest jump up in the envelope
@@ -44,7 +45,6 @@
 ;;; - fft-size: size of the fft window, if nil, one is chosen for you.
 ;;; - multiple-ffts: when t, run multiple overlapping ffts for the entire length
 ;;;   of the file.
-;;; TODO maybe use #'parabolic-peak-offset for more accurate dom-freq etc?
 #+clm
 (defpublic spectral-analysis (file
 			      &key
@@ -71,17 +71,18 @@
     (unless (<= fft-size sample-len)
       (error "spectral-analysis: fft-size ~a too big for sample of length ~a"
 	     fft-size sample-len))
-    (print fft-size)
     ;; do as many ffts as nr-of-frames
     (loop for i from 0 below nr-of-frames
 	  for sample = (* i (floor fft-size 2))
-	  for mags = (clm::fft-from-file
-		      file
-		      :start-sample sample
-		      :fft-size fft-size
-		      :window window)
-	  ;; only use half the spectrum
-	  for nr-of-harmonics = (/ (length mags) 2)
+	  with nr-of-harmonics = (/ fft-size 2)
+	  for mags = (subseq (clm::fft-from-file
+			      file
+			      :start-sample sample
+			      :fft-size fft-size
+			      :window window)
+			     0
+			     nr-of-harmonics)
+	  ;; only use half of the bins, rest is above nyquist
 	  for arithmetic-mean = 0
 	  for geometric-mean = 0
 	  for a = 0
@@ -89,9 +90,9 @@
 	  for c = 0
 	  for d = 0
 	  for dom-freq = '(0 0)
-	  do (loop for j from 0 and m in mags repeat nr-of-harmonics
+	  do (loop for j from 0 and m in mags
 		   for freq = (* j base-freq)
-		   do (when (> m (car dom-freq)) (setf dom-freq (list m freq)))
+		   do (when (> m (car dom-freq)) (setf dom-freq (list m j)))
 		      (incf a (* freq (expt m 2)))
 		      (incf b (expt m 2))
 		      (incf arithmetic-mean m)
@@ -105,8 +106,21 @@
 	     (push c centroid)
 	     (push (sqrt (/ d b)) spread)
 	     (push (/ geometric-mean arithmetic-mean) flatness)
-	     (push (* 1.0 (cadr dom-freq)) dominant-freq)
-	     (push (harmonic-product-spectrum mags base-freq) fundamental-freq))
+	     ;; peak interpolation for more accurate dom-freq
+	     (let* ((peak-idx (cadr dom-freq))
+		    (new-peak-idx
+		      (if (or (= peak-idx 0) (= peak-idx (1- nr-of-harmonics)))
+			  peak-idx
+			  (+ (parabolic-peak-offset
+			      (nth (1- peak-idx) mags)
+			      (nth peak-idx mags)
+			      (nth (1+ peak-idx) mags))
+			     peak-idx)))
+		    (new-dom-freq (* new-peak-idx base-freq 1.0)))
+	       (push new-dom-freq dominant-freq)
+	       (push (when (> new-dom-freq (* 4 base-freq))
+		       (harmonic-product-spectrum mags base-freq))
+		     fundamental-freq)))
     (values (reverse centroid)
 	    (reverse spread)
 	    (reverse flatness)
@@ -200,6 +214,7 @@
 		  :spread ',(spread sf)
 		  :flatness ',(flatness sf)
 		  :dominant-frequency ',(dominant-frequency sf)
+		  :fundamental-frequency ',(fundamental-frequency sf)
 		  :smoothness ',(smoothness sf)
 		  :transient ',(transient sf)))
 
