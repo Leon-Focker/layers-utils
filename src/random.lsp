@@ -47,7 +47,7 @@
 (defpubmethod set-state ((rn random-number) state)
   (prog1 (setf (pcg::pcg-state (pcg rn))
 	       state)
-    (rewind rn 0)))
+    (rewind rn -1)))
 
 (export '(random) :layers-utils)
 
