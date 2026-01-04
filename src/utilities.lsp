@@ -52,6 +52,8 @@
 ;; *** nth-mod
 ;;; nth element from a list but if n > (length list), loop contents of list.
 (defpublic nth-mod (n ls)
+  (unless (and (listp ls) (not (null ls)))
+    (error "nth-mod: ls is either empty or not a list: ~a" ls))
   (nth (mod n (length ls)) ls))
 
 ;; *** rotate
