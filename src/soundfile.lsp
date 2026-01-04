@@ -41,13 +41,10 @@
 ;;; dominant frequency, centroid, flatness, spread and estimated pitch of
 ;;; soundfile.
 ;;; - file: can either be an array or the path to a file.
-;;; - fft-size: 
-;;; TODO would be more fun to get more than one fft frame...
-
-;;; - divide into frames (overlapping?), window them (done), analyse them, ...
-
-;;;   also getting a dominant-frequency is kinda wonky when the base-freq
-;;;   doesn't match the root harmonic of the file.
+;;; - fft-size: size of the fft window, if nil, one is chosen for you.
+;;; - multiple-ffts: when t, run multiple overlapping ffts for the entire length
+;;;   of the file.
+;;; TODO maybe use #'parabolic-peak-offset for more accurate dom-freq etc?
 #+clm
 (defpublic spectral-analysis (file
 			      &key
