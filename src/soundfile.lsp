@@ -57,8 +57,8 @@
     (error "spectral-analysis: file should be a string or array!"))
   (let* ((srate (if is-array srate (clm::sound-srate file)))
 	 (sample-len (if is-array (length file) (soundfile-duration file)))
-	 (fft-size (or fft-size (if multiple-ffts 2048
-				    (ash 1 (1- (integer-length sample-len))))))
+	 (fft-size (or fft-size
+		       (ash 1 (1- (integer-length (min sample-len srate))))))
 	 (base-freq (/ srate fft-size))
 	 (nr-of-frames (if multiple-ffts
 			   (1- (* (floor sample-len fft-size) 2))
