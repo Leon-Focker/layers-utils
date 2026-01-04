@@ -368,6 +368,20 @@
 	      (* b x)
 	      (* c (expt x 2))))))
 
+;; *** plot-points
+;;; Calls gnuplot in a shell, so gnuplot must be installed.
+;;; (check with gnuplot --version)
+;;; - points: list of (x y) pairs.
+(defun plot-points (points &optional lines logscale)
+  (let ((data-file "/tmp/points.dat"))
+    (with-open-file (out data-file :direction :output :if-exists :supersede)
+      (dolist (p points)
+	(format out "~A ~A~%" (first p) (second p))))
+    (uiop:run-program
+     (format nil "gnuplot -p -e \"~aplot '/tmp/points.dat' with ~a\""
+	     (if logscale "set logscale x 10; " "")
+	     (if lines "lines" "points")))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                          [ LISTS OF DURATIONS ]                            ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
