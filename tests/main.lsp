@@ -364,7 +364,7 @@
   (let ((file (layers-utils-tests-path "test-snd.txt"))
 	(test-sound (make-soundfile 'test "tests/220.wav")))
     ;; analyse
-    #+clm(analyse-soundfile test-sound)
+    #+clm(analyse-soundfile test-sound :multiple-ffts nil)
     ;; write to .txt file
     (probe-delete file)
     (store-in-text-file test-sound file)
@@ -372,14 +372,15 @@
     ;; check result
     (is (check-sanity test-sound))
     (is (equal 'test (id test-sound)))
-    #+clm(is (= 220.00005494702762d0 (centroid test-sound)))
-    #+clm(is (= 219.72656 (dominant-frequency test-sound)))
+    #+clm(is (= 220.00009340120027d0 (car (centroid test-sound))))
+    #+clm(is (= 219.93554353144847d0 (car (dominant-frequency test-sound))))
+    #+clm(is (= 220.03018531876404d0 (car (fundamental-frequency test-sound))))
     #+clm(is (= 6.7098126 (duration test-sound)))
-    #+clm(is (= 2.001464645988896d-4 (flatness test-sound)))
+    #+clm(is (= 3.131415586564255d-4 (car (flatness test-sound))))
     #+clm(is (= 0.27550530433654785d0 (peak test-sound)))
     #+clm(is (= 48000 (samplerate test-sound)))
     #+clm(is (= 0.8772904737843085d0 (smoothness test-sound)))
-    #+clm(is (= 1.0122329166046142d0 (spread test-sound)))
+    #+clm(is (= 1.0022743267543979d0 (car (spread test-sound))))
     #+clm(is (= 322071 (total-samples test-sound)))
     #+clm(is (= 0.07589141036017721d0 (transient test-sound)))
     (probe-delete file)
