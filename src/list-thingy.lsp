@@ -38,6 +38,15 @@
 	  (setf (current lt) 0))
 	(nth (current lt) data)))))
 
+;; *** get-with-id
+;;; get an element from list that matches id
+(defpubmethod get-with-id (id (lt list-thingy))
+  (find id (data lt) :test #'(lambda (x y) (equal x (id y)))))
+
+;; alias
+(setf (symbol-function 'find-with-id) #'get-with-id)
+(export 'find-with-id :layers-utils)
+
 ;; *** see-next
 ;;; get next element in a list but don't change the current-slot
 (defpubmethod see-next ((lt list-thingy))
