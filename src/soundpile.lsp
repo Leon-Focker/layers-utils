@@ -51,7 +51,11 @@
 ;;; - fft-size must be a power of 2 and starts at the beginning of the sample
 ;;;   when fft-size is nil, the biggest one possible is chosen
 (defpubmethod soundpile-from-folder (id path-to-folder
-				  &key analyse fft-size id-uniquifier)
+					&key
+					analyse
+					fft-size
+					multiple-ffts
+					id-uniquifier)
   (let* ((sp (make-soundpile id '()))
 	 (files (get-sndfiles path-to-folder))
 	 (names (loop for i in files collect (pathname-name i))))    
@@ -70,7 +74,10 @@
 				 file
 				 :directory "")))
 			(when analyse
-			  (analyse-soundfile sf :fft-size fft-size))
+			  (analyse-soundfile
+			   sf
+			   :fft-size fft-size
+			   :multiple-ffts multiple-ffts))
 			sf)
 		    (format t "~&storing file: ~a" id))
 		  sp)
