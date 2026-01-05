@@ -36,8 +36,12 @@
 ;;; - expt: shape the distribution density curve:
 ;;;         expt < 1.0  ->  more likely to get 0.5 than 0 or 1
 ;;;         expt > 1.0  ->  more likely to get 0 or 1 than 0.5
-(defun random-non-linear-distribution-density (&optional (expt 0.8))
-  (let ((rand (random 1.0)))
+;;; - input: use this number between 0.0 and 1.0 instead of a random one
+(defpublic random-non-linear-distribution-density (&optional (expt 0.8) input)
+  (when (and input (or (not (numberp input)) (not (<= 0 input 1.0))))
+    (error "random-non-linear-distribution-density: input should be a number ~
+            between 0.0 and 1.0 but is ~a." input))
+  (let ((rand (or input (random 1.0))))
     (if (< rand 0.5)
 	(* 0.5 (expt (* 2 rand) expt))
 	(- 1.0 (* 0.5 (expt (* 2 (- 1.0 rand)) expt))))))
