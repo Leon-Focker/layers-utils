@@ -50,10 +50,24 @@
 (setf (symbol-function 'random-nldd) #'random-non-linear-distribution-density)
 (export 'random-nldd :layers-utils)
 
+;; *** equal-tempered-multiplier
+;;; return the multiplier a frequency has to be multiplied with, to get the
+;;; interval for the desired number of steps. The standard values for this
+;;; function assume the 12 tone equal temperament with the division of the
+;;; octave (2 times the frequency) in 12 equal parts.
+(defpublic equal-tempered-multiplier (steps &optional (octave 2) (division 12))
+  (expt (expt octave (/ 1 division)) steps))
+
 ;; *** load-from-file
 ;;; eval something read from a file.
 (defpublic load-from-file (file)
   (eval (read-from-file file)))
+
+;; *** check-all-types
+(defmacro check-all-types (type &rest vars)
+  `(progn
+     ,@(loop for var in vars
+             collect `(check-type ,var ,type))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                                [ LISTS ]                                   ;;;
