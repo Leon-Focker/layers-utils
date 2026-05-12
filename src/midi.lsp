@@ -4,62 +4,85 @@
 (in-package :layers-utils)
 
 ;; *** lists-to-midi
-;;; generate a midi file from lists of starting points, length, pitch...
-;;; if one list is shorter than others it will be wrapped (mod).
-;;; Has a lot less features than slippery chickens event-list-to-midi-file, but
-;;; in return it's a lot easier and skipps the generation of an event, which
+;;; Generate a MIDI file from pitch, duration and start-time data in lists.
+;;; This function will generate as many midi notes, as the number of elements
+;;; of the longest argument-list. If for example you only supply one pitch value
+;;; but three durations, three notes with the same pitch will be generated.
+;;; Shorter lists are 'looped' with mod. Other than slippery chickens 
+;;; #'event-list-to-midi-file, this skipps the generation of a sc::event, which
 ;;; might be favorable in some cases.
-;;; pitch-list - A list of either sc-pitches or midi-key-numbers. Can also be a
-;;;  list of chords, ie. lists of pitches.
-
-(defmacro lists-to-midi-aux (pitch)
-  ``(,(if (numberp ,pitch) ,pitch (note-to-midi ,pitch))
-     ,(nth (mod i start-len) start-time-list)
-     ,(nth (mod i velo-len) velo)
-     ,(nth (mod i duration-len) duration-list)
-     ,(nth (mod i chan-len) channel)))
-
-(defpublic lists-to-midi (pitch-list duration-list start-time-list
-		      &key
-			velocity-list
-			(tempo 60)
-			(channel '(0))
-			(file (format nil "~a~a" *layers-utils-home-dir*
-				      "midi-output.mid")))
-  (when (or (null pitch-list) (null duration-list))
-    (error "please provide at least one value in the pitch and the duration ~
-            lists in lists-to-midi"))
-  (unless start-time-list (setf start-time-list
-				(get-start-times duration-list)))
-  (setf channel (force-list channel))
-  (let* ((pitch-len (length pitch-list))
-	 (duration-len (length duration-list))
-	 (start-len (length start-time-list))
-	 (velo (or velocity-list '(0.7)))
-	 (velo-len (length velo))
-	 (chan-len (length channel))
-	 (total (apply #'max `(,pitch-len ,duration-len ,start-len ,velo-len)))
+;;;
+;;; Arguments:
+;;; - pitch-list: A list of either sc-pitches or midi-key-numbers. Can also be a
+;;;   list of chords, ie. lists of pitches.
+;;; - durations-list: A list of durations, either in seconds (when tempo = 60 or
+;;;   scale-durs-to-tempo = t) or beats.
+;;; - start-time-list: An optional list of start-times, either in seconds (when
+;;;   tempo = 60 or scale-durs-to-tempo = t) or beats. If nil, notes are placed
+;;;   one after another.
+;;; Keywords:
+;;; - velocity-list: Optional number or list of velocity values. Default is 0.7.
+;;; - channel-list: Optional integer or list of channels to which to write the
+;;;   note to. Default is 0.
+;;; - pitch-bend-list: Optional number or list of pitch bend values for each
+;;;   note. Default is 0.
+;;; - scale-durs-to-tempo: When true, Interpret durations in durations-list as
+;;;   durations in seconds, when nil, they are interpreted in durations in
+;;;   numbers of beats in a tempo. Default is nil.
+;;; - tempo: Tempo encoded in the file. Default is 60.
+;;; - file: Full path for the resulting MIDI file. Default is "midi-output.mid"
+;;;   in the *layers-utils-home-dir*.
+(defpublic lists-to-midi (pitch-list
+			  duration-list
+			  start-time-list
+			  &key
+			  (velocity-list 0.7)
+			  (channel-list 0)
+			  (pitch-bend-list 0)
+			  (tempo 60)
+			  scale-durs-and-starts-to-tempo
+			  (file (format nil "~a~a" *layers-utils-home-dir*
+					"midi-output.mid")))
+  (setf channel-list (force-list channel-list))
+  (setf velocity-list (force-list velocity-list))
+  (setf pitch-bend-list (force-list pitch-bend-list))
+  (check-all-types list pitch-list duration-list start-time-list)
+  (unless (and pitch-list duration-list)
+    (error
+     "Lists-to-midi: Please provide at least one value for pitch and duration!"))
+  (unless start-time-list
+    (setf start-time-list (get-start-times duration-list)))
+  (let* ((all-lists (list pitch-list duration-list start-time-list velocity-list
+			  channel-list pitch-bend-list))
+	 (max-len (apply #'max (mapcar #'length all-lists)))
 	 (events '()))
-    (setf events
-	  (sort (loop for i below total
-		      for pitch = (nth (mod i pitch-len) pitch-list)
-		      collect (lists-to-midi-aux
-			       (if (listp pitch) (car pitch) pitch))
-		      when (listp pitch)
-			append (loop for p in (cdr pitch)
-				     collect (lists-to-midi-aux p)))
-		#'(lambda (x y) (< (second x) (second y))))
-	  events (loop for event in events
-		       appending
-		       (cm::output-midi-note
-			(pop event)
-			0
-			(pop event)
-			(pop event)
-			(pop event)
-			(pop event))))
+    ;; maybe scale durations
+    (when scale-durs-and-starts-to-tempo
+      (flet ((scale-time (time)
+	       (* time (/ tempo 60))))
+	(setf duration-list (mapcar #'scale-time duration-list)
+	      start-time-list (mapcar #'scale-time start-time-list))))
+    ;; collect events
+    (loop for i below max-len
+	  for pitches = (force-list (nth-mod i pitch-list))
+	  do (loop for pitch in pitches
+		   do (push (list
+			     (if (numberp pitch) pitch (note-to-midi pitch))
+			     (nth-mod i pitch-bend-list)
+			     (nth-mod i start-time-list)
+			     (nth-mod i velocity-list)
+			     (nth-mod i duration-list)
+			     (nth-mod i channel-list))
+			    events)))
+    ;; sort them by start-time
+    (setf events (sort events #'(lambda (x y) (< (third x) (third y)))))
+    ;; create the MIDI file with cm
     (cm::events
-     (cm::new cm::seq :name (gensym) :time 0.0 :subobjects events)
+     (cm::new cm::seq
+       :name (gensym)
+       :time 0.0
+       :subobjects (loop for event in events
+			 append (apply #'cm::output-midi-note event)))
      file
      :tempo tempo)))
 
@@ -73,18 +96,23 @@
 (defpublic midi-file-to-list (file &optional track)
   (unless (probe-file file)
     (error "midi-file-to-list: file not found: ~a" file))
-  (let* ((cm-midi (cm::parse-midi-file file track)))
-    (remove nil
-	    (loop for m in cm-midi
-		  collect (typecase m
-			    (cm::midi (list (cm::object-time m)
-					    (cm::midi-keynum m)
-					    (cm::midi-duration m)
-					    (cm::midi-amplitude m)
-					    (cm::midi-channel m)
-					    (+ (cm::object-time m)
-					       (cm::midi-duration m)))))))))
-
+  (let* ((cm-midi (cm::parse-midi-file file track))
+	 (result
+	   (remove nil
+		   (loop for m in cm-midi
+			 collect (typecase m
+				   (cm::midi (list (cm::object-time m)
+						   (cm::midi-keynum m)
+						   (cm::midi-duration m)
+						   (cm::midi-amplitude m)
+						   (cm::midi-channel m)
+						   (+ (cm::object-time m)
+						      (cm::midi-duration m)))))))))
+    ;; sort by start-time and keynum
+    (sort result #'(lambda (a b)
+                     (if (= (first a) (first b))
+			 (< (second a) (second b))
+			 (< (first a) (first b)))))))
 
 (setf (symbol-function 'midi-to-list) #'midi-file-to-list)
 
@@ -254,9 +282,8 @@
 	lowest
 	highest
 	(x-values '())
-	(y-values '()))
-    ;; sort by start-time
-    (setf lists (sort lists #'(lambda (x y) (< (first x) (first y)))))
+	(y-values '())
+	(result-x '()))
     ;; init all missing variables
     (loop for event in lists
 	  for time = (first event)
@@ -265,17 +292,19 @@
 	  maximize time into t-max
 	  minimize key into k-min
 	  maximize key into k-max
-	  do (push time x-values)
-	     (push key y-values)
+	  collect time into x
+	  collect key into y
 	  finally (setf first t-min
 			last t-max
 			lowest k-min
-			highest k-max))
-    (reverse
-     (loop for x in x-values and y in y-values
-	   ;; in reverse, because we reverse again in the end
-	   collect (rescale y lowest highest 0 1)
-	   collect (rescale x first last 0 100)))))
+			highest k-max
+			x-values x
+			y-values y))
+    (loop for x in x-values and y in y-values
+	  for x-already-found = (find x result-x)
+	  do (push x result-x)
+	  unless x-already-found collect (rescale x first last 0 100)
+	    unless x-already-found collect (rescale y lowest highest 0 1))))
 
 (setf (symbol-function 'midi-to-env) #'midi-file-to-env)
 (export 'midi-to-env :layers-utils)

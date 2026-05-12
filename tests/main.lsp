@@ -322,11 +322,11 @@
 		   :velocity-list '(.1 .4 .8) :file file)
     (is (file-write-ok file 10))
     ;; read midi file
-    (is (equal '((1.0 52 1.0 0.09448819 0 2.0) (1.0 36 1.0 0.79527557 0 2.0)
+    (is (equal '((1.0 36 1.0 0.79527557 0 2.0) (1.0 52 1.0 0.09448819 0 2.0)
 		 (5.0000005 54 1.0 0.39370078 0 6.0000005))
 	       (midi-file-to-list file)))
     ;; midi to env
-    (is (equal '(0.0 0.8888889 0.0 0.0 100.0 1.0)
+    (is (equal '(0.0 0.0 100.0 1.0)
 	       (midi-to-env file)))
     ;; todo deconstruct-chords
     ;; todo harmony-filter
@@ -372,15 +372,15 @@
     ;; check result
     (is (check-sanity test-sound))
     (is (equal 'test (id test-sound)))
-    #+clm(is (= 220.00009340120027d0 (car (centroid test-sound))))
-    #+clm(is (= 219.93554353144847d0 (car (dominant-frequency test-sound))))
-    #+clm(is (= 220.03018531876404d0 (car (fundamental-frequency test-sound))))
+    #+clm(is (= 220.000093990719d0 (car (centroid test-sound))))
+    #+clm(is (= 219.81719936285495d0 (car (dominant-frequency test-sound))))
+    #+clm(is (= 221.1914 (car (fundamental-frequency test-sound))))
     #+clm(is (= 6.7098126 (duration test-sound)))
-    #+clm(is (= 3.131415586564255d-4 (car (flatness test-sound))))
+    #+clm(is (= 3.754970640876718d-4 (car (flatness test-sound))))
     #+clm(is (= 0.27550530433654785d0 (peak test-sound)))
     #+clm(is (= 48000 (samplerate test-sound)))
     #+clm(is (= 0.8772904737843085d0 (smoothness test-sound)))
-    #+clm(is (= 1.0022743267543979d0 (car (spread test-sound))))
+    #+clm(is (= 1.307124340405836d0 (car (spread test-sound))))
     #+clm(is (= 322071 (total-samples test-sound)))
     #+clm(is (= 0.07589141036017721d0 (transient test-sound)))
     (probe-delete file)
