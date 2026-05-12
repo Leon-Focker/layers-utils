@@ -396,7 +396,7 @@
                             (if (= (aref matrix i j)  1)
                                 "_"
                                 " ")))))
-    "=)"))
+    (values ls "=)")))
 
 
 ;; *** agnostic-directory-pathname
