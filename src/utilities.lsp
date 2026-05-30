@@ -1,3 +1,4 @@
+
 ;; ** utilities
 
 (in-package :layers-utils)
@@ -557,5 +558,18 @@
     (loop for i from 0 below len do
       (setf (aref rdat i) (* (aref rdat i) (aref window i))))
     rdat))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                                [ STRUCTS ]                                 ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; *** copy-and-update
+(defpublic copy-and-update (struct &rest bindings)
+  (loop
+    with copy = (copy-structure struct)
+    for (slot value) on bindings by #'cddr
+    do (setf (slot-value copy slot) value)
+    finally (return copy)))
 
 ;;;; EOF utilities.lsp
