@@ -26,8 +26,8 @@
 ;;;   note to. Default is 0.
 ;;; - pitch-bend-list: Optional number or list of pitch bend values for each
 ;;;   note. Default is 0.
-;;; - scale-durs-to-tempo: When true, Interpret durations in durations-list as
-;;;   durations in seconds, when nil, they are interpreted in durations in
+;;; - scale-durs-and-starts-to-tempo: When true, Interpret durations in
+;;;   durations-list as durations in seconds, when nil, they are interpreted as
 ;;;   numbers of beats in a tempo. Default is nil.
 ;;; - tempo: Tempo encoded in the file. Default is 60.
 ;;; - file: Full path for the resulting MIDI file. Default is "midi-output.mid"

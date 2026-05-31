@@ -343,7 +343,7 @@
 ;;;
 ;;; OPTIONAL ARGUMENTS
 ;;; keyword arguments:
-;;; :y-range. Maximum value that the y-axis display. When nil, the graph will be
+;;; :y-range. Maximum value that the y-axis displays. When nil, the graph will be
 ;;; normalized.
 ;;; :start. Where to start reading the sequence from. Default = 0 
 ;;; :abs. When t, the absolute value of all numbers is visualized
