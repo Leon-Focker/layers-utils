@@ -99,6 +99,13 @@
     (append (subseq ls effective-index)
             (subseq ls 0 effective-index))))
 
+;; *** map-tree
+(defpublic map-tree (fun tree)
+  (cond ((null tree) nil)
+        ((atom tree) (funcall fun tree))
+        (t (cons (map-tree fun (car tree))
+                 (map-tree fun (cdr tree))))))
+
 ;; *** push-key-value
 ;;; push a key-value pair to a (p)list.
 (defmacro push-key-value (key value place)
