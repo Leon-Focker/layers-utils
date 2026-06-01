@@ -64,15 +64,15 @@
 	      start-time-list (mapcar #'scale-time start-time-list))))
     ;; collect events
     (loop for i below max-len
-	  for pitches = (force-list (nth-mod i pitch-list))
+	  for pitches = (force-list (nth-mod i (map-tree #'float pitch-list)))
 	  do (loop for pitch in pitches
 		   do (push (list
 			     (if (numberp pitch) pitch (note-to-midi pitch))
-			     (nth-mod i pitch-bend-list)
-			     (nth-mod i start-time-list)
-			     (nth-mod i velocity-list)
-			     (nth-mod i duration-list)
-			     (nth-mod i channel-list))
+			     (nth-mod i (mapcar #'float pitch-bend-list))
+			     (nth-mod i (mapcar #'float start-time-list))
+			     (nth-mod i (mapcar #'float velocity-list))
+			     (nth-mod i (mapcar #'float duration-list))
+			     (nth-mod i (mapcar #'round channel-list)))
 			    events)))
     ;; sort them by start-time
     (setf events (sort events #'(lambda (x y) (< (third x) (third y)))))
