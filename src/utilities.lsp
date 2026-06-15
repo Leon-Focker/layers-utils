@@ -452,7 +452,7 @@
 ;;; TODO should also account for rests (in parens)
 ;;; collect the durations in a certain section of a certain layer
 (defpublic get-durations (list-of-start-times)
-  (let ((ls (avoid-repetition (sort list-of-start-times #'<) t)))
+  (let ((ls (avoid-repetition (sort (copy-list list-of-start-times) #'<) t)))
     (loop for time in (cdr ls)
        with last = (car ls)
        collect (- time last)
