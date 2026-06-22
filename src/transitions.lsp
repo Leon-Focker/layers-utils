@@ -8,6 +8,57 @@
 ;; *** fibonacci-transitions
 (export '(fibonacci-transition fibonacci-transitions) :layers-utils)
 
+;; *** uneven-fibonacci-transitions
+;;; Unlike the normal fib-transitions, here not all transitions have the same
+;;; length relative to each other. Their relative lengths are determined by
+;;; relative-lengths: a list of numbers. Should that list be shorter than the
+;;; number of transitions, 1 is used for those last transitions.
+(defun ipt (total-items weights)
+  (let ((weight-sum (apply #'+ weights))
+	(cnt 0)
+	(ipt '()))
+    (loop for weight in weights
+	  ;; adding a bit to balance ~floating point errors~
+	  for nr = (+ (* (/ weight weight-sum) total-items) 0.000001)
+	  for items-so-far = (apply #'+ ipt)
+	  do (incf cnt nr)
+	     (push (- (floor cnt) items-so-far) ipt))
+    (reverse ipt)))
+
+(defun uneven-fibonacci-transitions-aux (total-items weights)
+  (let ((ipt (ipt total-items weights)))
+    (loop for num in ipt and i from 0
+	  append (fibonacci-transition num i (1+ i)))))
+
+(defpublic uneven-fibonacci-transitions (total-items levels relative-lengths)
+  (let ((len (typecase levels 
+               (list (length levels))
+               (integer levels)
+               (t (error "l-for-lookup::fibonacci-transitions: ~
+                          levels must be a list or an integer: ~a"
+                         levels)))))
+    ;; Fit number of relative-lengths to number of levels (len)
+    (cond ((< len (length relative-lengths))
+	   (setf relative-lengths (subseq relative-lengths 0 len)))
+	  ((> len (length relative-lengths))
+	   (setf relative-lengths
+		 (append relative-lengths
+			 (make-list (- len
+				       (length relative-lengths))
+				    :initial-element 1)))))
+    ;; get the transitions
+    (if (= 1 len)
+        (make-list total-items :initial-element 0)
+        (let* ((result (uneven-fibonacci-transitions-aux
+			total-items
+			relative-lengths)))
+          ;; convert references to the levels list elements, if given
+          (setq result
+                (if (listp levels)
+                    (loop for el in result collect (nth el levels))
+                    result))
+          result))))
+
 ;; *** procession
 ;;; see slippery-chicken::procession
 
