@@ -6,13 +6,12 @@
 (in-package :layers-utils)
 
 ;; *** fibonacci-transitions
-(export '(fibonacci-transition fibonacci-transitions) :layers-utils)
+(export '(fibonacci-transition fibonacci-partial-transition
+	  fibonacci-transitions)
+	:layers-utils)
 
-;; *** uneven-fibonacci-transitions
-;;; Unlike the normal fib-transitions, here not all transitions have the same
-;;; length relative to each other. Their relative lengths are determined by
-;;; relative-lengths: a list of numbers. Should that list be shorter than the
-;;; number of transitions, 1 is used for those last transitions.
+;; *** ~helpers~
+
 (defun ipt (total-items weights)
   (let ((weight-sum (apply #'+ weights))
 	(cnt 0)
@@ -25,19 +24,46 @@
 	     (push (- (floor cnt) items-so-far) ipt))
     (reverse ipt)))
 
-(defun uneven-fibonacci-transitions-aux (total-items weights)
+(defun uneven-fibonacci-transitions-aux
+    (total-items weights progress-per-transition)
   (let ((ipt (ipt total-items weights)))
-    (loop for num in ipt and i from 0
-	  append (fibonacci-transition num i (1+ i)))))
+    (loop for num in ipt and i from 0 and p in progress-per-transition
+	  append (fibonacci-partial-transition num p i (1+ i)))))
 
-(defpublic uneven-fibonacci-transitions (total-items levels relative-lengths)
+
+;; *** uneven-fibonacci-transitions
+;;; Get even more control on the individual transitions happening within
+;;; fibonacci-transitions.
+;;; Analog to fibonacci-transitions:
+;;; - total-items: Length of the resulting list.
+;;; - levels: Either a number of values or a list of the values to transition
+;;;   through.
+;;; Additional Arguments:
+;;; - relative-lengths: A list of numbers representing the relative length of
+;;;   the individual transitions to each other. Should be (1- nr-of-levels).
+;;;   When the given list is too short, 1s are appended.
+;;; - progress-per-transition: List of numbers between 0 and 1. Progress 
+;;;   argument for each individual fibonacci-partial-transition.
+;;;   Defaults to all 1.
+;;; 
+;;; EXAMPLES
+#|
+(uneven-fibonacci-transitions 20 2 '(2.5 1))
+=> (0 0 1 0 1 0 1 0 1 1 0 1 1 1 1 2 1 2 2 2)
+
+(lyu:uneven-fibonacci-transitions 20 2 '(2.5 1) '(0.5))
+=> (0 0 0 0 1 0 0 1 0 0 1 0 1 0 1 2 1 2 2 2)
+|#
+(defpublic uneven-fibonacci-transitions
+    (total-items levels relative-lengths
+		 &optional progress-per-transition)
   (let ((len (typecase levels 
                (list (length levels))
                (integer levels)
-               (t (error "l-for-lookup::fibonacci-transitions: ~
+               (t (error "uneven-fibonacci-transitions: ~
                           levels must be a list or an integer: ~a"
                          levels)))))
-    ;; Fit number of relative-lengths to number of levels (len)
+    ;; Fit the relative-lengths ls to the number of transitions (len)
     (cond ((< len (length relative-lengths))
 	   (setf relative-lengths (subseq relative-lengths 0 len)))
 	  ((> len (length relative-lengths))
@@ -46,12 +72,26 @@
 			 (make-list (- len
 				       (length relative-lengths))
 				    :initial-element 1)))))
-    ;; get the transitions
+    ;; Fit the progress-per-transition to the number of transitions
+    (unless progress-per-transition
+      (setf progress-per-transition
+	    (make-list (length relative-lengths) :initial-element 1)))
+    (cond ((< len (length progress-per-transition))
+	   (setf progress-per-transition
+		 (subseq progress-per-transition 0 len)))
+	  ((> len (length progress-per-transition))
+	   (setf progress-per-transition
+		 (append progress-per-transition
+			 (make-list (- len
+				       (length progress-per-transition))
+				    :initial-element 1)))))
+    ;; Get the transitions and maybe replace the keys with the actual levels
     (if (= 1 len)
         (make-list total-items :initial-element 0)
         (let* ((result (uneven-fibonacci-transitions-aux
 			total-items
-			relative-lengths)))
+			relative-lengths
+			progress-per-transition)))
           ;; convert references to the levels list elements, if given
           (setq result
                 (if (listp levels)
@@ -64,16 +104,16 @@
 
 ;; *** kernel-transitions
 ;;; unpredictable transition between items
-;;; total-items - length of the list of results
-;;; levels - either a number (how many different elements)
-;;;  or a list, with the elements to transition over
-;;; kernel - list of numbers, as many numbers as wanted
-;;;  every number represents items moved to the left (positive) or the right
-;;;  (negative) during a loop. - Just experiment :D
-;;; e - exponent for the list we start with, controls the ratio of items used in
-;;;  the final list.
-;;;  Below 1 -> more of the higher levels: 0.5 => (0 0 1 1 1 1)
-;;;  Above 1 -> more of the lower levels:  2   => (0 0 0 0 0 1)
+;;; - total-items: length of the list of results.
+;;; - levels: either a number (how many different elements)
+;;;   or a list, with the elements to transition over.
+;;; - kernel: list of numbers, as many numbers as wanted
+;;;   every number represents items moved to the left (positive) or the right
+;;;   (negative) during a loop. - Just experiment :D
+;;; - e: exponent for the list we start with, controls the ratio of items used
+;;;   in the final list.
+;;;   Below 1 -> more of the higher levels: 0.5 => (0 0 1 1 1 1)
+;;;   Above 1 -> more of the lower levels:  2   => (0 0 0 0 0 1)
 #|
 (kernel-transitions 20 3 '(-3 2 4))
 => (1 1 1 1 0 1 1 2 2 2 2 0 2 0 0 0 0 0 1 2)
@@ -105,24 +145,24 @@
 
 ;; *** window-transitions
 ;;; make a transition over items, using a sort of window.
-;;; total-items - length of the list of results
-;;; levels - either a number (how many different elements)
-;;;  or a list, with the elements to transition over
-;;; e - exponent for the list we start with, controls the ratio of items used in
-;;;  the final list.
-;;;  Below 1 -> more of the higher levels: 0.5 => (0 0 1 1 1 1)
-;;;  Above 1 -> more of the lower levels:  2   => (0 0 0 0 0 1)
-;;; window-size - controls which items can be chosen at any point. The closer to
-;;;  1 it is, the longer will earlier items be chosen. If it is 0, no earlier
-;;;  item will be chosen.
-;;;  This controls which items can be chosen at any point. If 0, only the item
-;;;  at that point in the original sequence is chosen, If 1, all items can be
-;;;  chosen at the end of the transition.
-;;; control-function - this should be a function with two arguments - total-items
-;;;  and levels, which will be called for the generation of the control-sequence
-;;;  instead of the linear/exponential standard function. Thus 'e will be ignored.
-;;;  the function must return a list!
-;;;  for example 'fibonacci-transitions or 'sc::procession.
+;;; - total-items: length of the list of results.
+;;; - levels: either a number (how many different elements) or a list, with the
+;;;   elements to transition over.
+;;; - e: exponent for the list we start with, controls the ratio of items used
+;;;   in the final list.
+;;;   Below 1 -> more of the higher levels: 0.5 => (0 0 1 1 1 1)
+;;;   Above 1 -> more of the lower levels:  2   => (0 0 0 0 0 1)
+;;; - window-size: controls which items can be chosen at any point. The closer
+;;;   to 1 it is, the longer will earlier items be chosen. If it is 0, no
+;;;   earlier item will be chosen.
+;;;   This controls which items can be chosen at any point. If 0, only the item
+;;;   at that point in the original sequence is chosen, If 1, all items can be
+;;;   chosen at the end of the transition.
+;;; - control-function: this should be a function with two arguments -
+;;;   total-items and levels, which will be called for the generation of the
+;;;   control-sequence instead of the linear/exponential standard function. Thus
+;;;   'e will be ignored. The function must return a list!
+;;;   for example 'fibonacci-transitions or 'sc::procession.
 #|
 EXAMPLE
 (window-transitions 20 3)
