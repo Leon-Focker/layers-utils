@@ -5,7 +5,8 @@
 ;;; following functions were written by me. If no author is specified, it was
 ;;; likely written by Michael.
 ;;;
-;;; Code copied on July 28th 2025
+;;; Code copied on July 28th 2025,
+;;; Copied fibonacci-partial-transition on June 27th 2026
 
 (in-package :layers-utils)
 
@@ -1171,6 +1172,45 @@
     (setq result (append left (nreverse right))
           result result)
     result))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; ****f* l-for-lookup/fibonacci-partial-transition
+;;; DATE
+;;; December 3rd 2025
+;;; 
+;;; DESCRIPTION
+;;; The same as fibonacci-transition except that it doesn't complete. So we
+;;; generated more results than required, using the <progress>  argument to
+;;; determine how far along the transition we should be at the end.
+;;; 
+;;; EXAMPLE
+#|
+(FIBONACCI-PARTIAL-TRANSITION 100 .7) -->
+(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0
+ 0 0 1 0 0 1 0 1 0 1 0 1 0 1 0 1 1 0 1 1 1 1)
+
+(FIBONACCI-PARTIAL-TRANSITION 100 .5) -->
+(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+ 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0)
+
+(FIBONACCI-TRANSITION 100) -->
+(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+ 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 1 0 0 1 0 1 0 1 1 0 1 0 1 0 1 1 0 1 1 0 1 1 1 1
+ 0 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1)
+|#
+;;; SYNOPSIS
+(defun fibonacci-partial-transition (num-items &optional (progress 0.618)
+                                               (item1 0) (item2 1) morph
+                                               first-down)
+;;; ****
+  (unless (number-between progress 0 1)
+    (error "l-for-lookup: fibonacci-partial-transition: 2nd argument should ~
+            ~%be a float between 0.0 and 1.0: ~a" progress))
+  (subseq (fibonacci-transition (round num-items progress) item1 item2 morph
+                                first-down)
+          0 num-items))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
