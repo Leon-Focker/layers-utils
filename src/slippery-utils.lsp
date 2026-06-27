@@ -1202,14 +1202,12 @@
 |#
 ;;; SYNOPSIS
 (defun fibonacci-partial-transition (num-items &optional (progress 0.618)
-                                               (item1 0) (item2 1) morph
-                                               first-down)
+						 (item1 0) (item2 1))
 ;;; ****
-  (unless (number-between progress 0 1)
+  (unless (and (numberp progress) (>= progress 0) (<= progress 1))
     (error "l-for-lookup: fibonacci-partial-transition: 2nd argument should ~
             ~%be a float between 0.0 and 1.0: ~a" progress))
-  (subseq (fibonacci-transition (round num-items progress) item1 item2 morph
-                                first-down)
+  (subseq (fibonacci-transition (round num-items progress) item1 item2)
           0 num-items))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
