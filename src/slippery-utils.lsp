@@ -12,6 +12,14 @@
 
 ;; ** utils
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; MDE Tue May  3 20:31:23 2016
+(defpublic flip (list)
+  (let ((min (apply #'min list))
+        (max (apply #'max list)))
+    (loop for el in list collect (+ min (- max el)))))
+
+
 ;; *** read-from-file
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
