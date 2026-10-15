@@ -122,10 +122,10 @@
   ;; make sure that all arguments are valid:
   (unless (and (numberp total-items) (numberp e) (listp kernel))
     (error "total-items and e must be a number, kernel a list in ~
-            make-transition but are: ~&~a~&~a~&~a"
+            kernel-transitions but are: ~&~a~&~a~&~a"
 	   total-items e kernel))
   (unless (or (numberp levels) (listp levels))
-    (error "levels must either be a number or a list in make-transition ~
+    (error "levels must either be a number or a list in kernel-transitions ~
               but is: ~&~a" levels))
   (let* ((result '())
 	 (total-levels levels))
@@ -175,10 +175,10 @@ EXAMPLE
   (unless (and (numberp total-items) (numberp e) (numberp window-size)
 	       (>= total-items 0) (>= e 0) (>= window-size 0))
     (error "total-items, e and window-size must be a positive number in ~
-            make-transition but are: ~&~a~&~a~&~a"
+            window-transitions but are: ~&~a~&~a~&~a"
 	   total-items e window-size))
   (unless (or (numberp levels) (listp levels))
-    (error "levels must either be a number or a list in make-transition ~
+    (error "levels must either be a number or a list in window-transitions ~
               but is: ~&~a" levels))
   (let* ((control '())
 	 (window 0)
@@ -214,5 +214,41 @@ EXAMPLE
 	      (incf (aref spread n))
 	    collect (nth (floor n) levels)))
      spread)))
+
+;; *** simple-introduction
+;;; simply introduce one new item into a rotation, not guaranteed to use all
+;;; possible items.
+;;; - total-items: length of the list of results.
+;;; - levels: either a number (how many different elements)
+;;;   or a list, with the elements to transition over.
+;;; - new-after: after how many occurrences of the last item the new one is
+;;;   introduced.
+#|
+EXAMPLE
+(simple-introduction 25 4 )
+=> (0 0 1 0 1 0 2 1 0 2 1 0 3 2 1 0 3 2 1 0 3 2 1 0 3)
+|#
+(defpublic simple-introduction (total-items levels &optional (new-after 2))
+  ;; make sure that all arguments are valid:
+  (unless (and (numberp total-items) (numberp new-after)
+	       (>= total-items 0) (> new-after 0))
+    (error "total-items and new-after must be a positive number in ~
+            simple-introduction but are: ~&~a~&~a"
+	   total-items new-after))
+  (unless (or (numberp levels) (listp levels))
+    (error "levels must either be a number or a list in simple-introduction ~
+              but is: ~&~a" levels))
+  ;; make sure levels is a list
+  (when (numberp levels)
+    (setf levels (loop for i below levels collect i)))
+  (loop repeat total-items
+	with cnt = 0
+	with level = 0
+	with max-level = (1- (length levels))
+	for n = 0 then (if (>= n level) (progn (incf cnt) 0) (1+ n))
+	when (>= cnt new-after)
+	  do (setf cnt 0 level (min max-level (1+ level)))
+	collect (nth (- level (mod n (1+ level))) levels)))
+
 
 ;; EOF transitions.lsp
