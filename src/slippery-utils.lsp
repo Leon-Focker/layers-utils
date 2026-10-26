@@ -837,6 +837,18 @@
 ;;; ****
   (note-to-degree note cm::*chromatic-scale*))
 
+;; *** freq-to-midi
+
+#+cm
+(defpublic freq-to-degree (freq &optional (scale cm::*scale*))
+;;; ****
+  (cm::keynum freq :hz t :in (find-scale scale)))
+
+#+cm
+(defpublic freq-to-midi (freq)
+;;; ****  
+  (freq-to-degree freq cm::*chromatic-scale*))
+
 ;; ** cm
 
 #+cm(in-package :cm)
