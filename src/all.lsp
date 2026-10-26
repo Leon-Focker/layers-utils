@@ -1,6 +1,9 @@
 ;; * Layers-utils
 
-;; LOAD ALL-LIGHT.LSP BEFORE THIS 
+;;; This file loads an extendet set of files with different dependencies, but
+;;; only if the relevant packages are found.
+
+(in-package :layers-utils)
 
 ;; ** Dependencies
 
