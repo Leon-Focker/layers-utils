@@ -7,7 +7,7 @@
 (defclass random-number (thingy)
   ((data :accessor data :initarg :data :type float)
    (state :accessor state :initform 0 :type integer)
-   (pcg :accessor pcg :initarg :pcg :initform (pcg::make-pcg) :type pcg:pcg)))
+   (pcg :accessor pcg :initarg :pcg :initform (pcg::make-pcg) :type pcg::pcg)))
 
 (defmethod print-object ((rn random-number) stream)
   (format stream "<Random Number ~a, Data: ~a>" (id rn) (data rn)))
