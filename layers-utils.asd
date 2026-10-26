@@ -7,6 +7,7 @@
   :serial t
   :pathname "src/"
   :components ((:file "package")
+	       (:file "paths")
 	       (:file "thingy")
 	       (:file "list-thingy")
 	       (:file "pcg-copy")
