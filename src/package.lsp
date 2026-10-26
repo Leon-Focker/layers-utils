@@ -11,10 +11,6 @@
 
 (defun lyu () (in-package :layers-utils))
 
-(in-package :cl) 
-
-(defun lyu () (in-package :layers-utils))
-
 (in-package :layers-utils)
 
 ;; use this instead of #'defun to automatically export the function
