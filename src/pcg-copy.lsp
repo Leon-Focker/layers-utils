@@ -1,7 +1,10 @@
 ;; ** Cl-Pcg Copy
 
 ;;; An almost exact copy of cl-pcg from the cl-pcg-20201016-hg/src/pcg.lisp file.
-;;; Only changed #'permute-rotate.
+;;; I removed some of the compiler optimizations for compatibility with ECL:
+;;; #'permute-rotate, remove sbcl specific function
+;;; #'permute-xor-shift replaced the unsigned 37 with a 64 and explicitely
+;;; convert to u32.
 
 ;; Copyright (c) 2017 Steve Losh and contributors
 
@@ -103,9 +106,11 @@ contains the bits of INTEGER. See http://www.cliki.net/ROTATE-BYTE"
 
 
 ;;;; Permutations -------------------------------------------------------------
+(declaim (ftype (function (u64) u32) permute-xor-shift))
+
 (defun-inline permute-xor-shift (data)
   (declare (optimize speed)
-           (type (unsigned-byte 37) data))
+           (type u64 data))
   ;; The reference implementation does this:
   ;;
   ;;   uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
@@ -138,8 +143,10 @@ contains the bits of INTEGER. See http://www.cliki.net/ROTATE-BYTE"
   ;;
   ;; And finally it assigns the resulting 37-bit value to a uint32_t which
   ;; clears out the 5 remaining high-order selector bits.
-  (ldb (byte 32 0)
-       (logxor data (ash data -18))))
+  ;;
+  ;; (ldb (byte 32 0)
+  ;;      (logxor data (ash data -18)))
+  (logand (logxor data (ash data -18)) #xFFFFFFFF))
 
 (defun-inline permute-rotate (data selector)
   (declare (optimize speed)

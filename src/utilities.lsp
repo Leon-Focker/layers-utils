@@ -8,7 +8,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; *** mirrors
-;;; formerly calles alternating-modulo
 ;;; mirrors input value between min and max value
 (defpublic mirrors (value min max)
   (labels ((helper (val)
