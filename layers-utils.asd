@@ -5,12 +5,13 @@
   :author "Leon Focker contact@leonfocker.de"
   :license "GNU General Public License v3.0"
   :serial t
+  :depends-on ((:feature (:not :wasm) "cl-pcg"))
   :pathname "src/"
   :components ((:file "package")
 	       (:file "paths")
 	       (:file "thingy")
 	       (:file "list-thingy")
-	       (:file "pcg-copy")
+	       (:file "wichmann-hill")
 	       (:file "random")
 	       (:file "slippery-utils")
 	       (:file "utilities")

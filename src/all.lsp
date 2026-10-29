@@ -42,6 +42,7 @@
 	     ))
     (load-layers-utils-src-file file)))
 
+#-wasm
 (load-all)
 
 (format t "~&finished loading layers-utils!")
