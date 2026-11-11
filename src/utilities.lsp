@@ -403,6 +403,36 @@
 	(when (> (abs offset) 1) (setf offset 0.0))
 	(* (+ offset peak-idx) base-freq)))))
 
+;; *** virtual-pitch
+;;; Simplified Terhardt virtual pitch via subharmonic coincidence.
+;;; See https://jjensen.org/VirtualPitch.html#algo
+;;; Skips masking / pitch shifts.
+;;; - freqs: list of numbers in Hz.
+;;; - weighta: optional list of spectral weights, same length.
+;;; Returns the best virtual pitch in Hz and its weight.
+;;; EXAMPLE
+#|
+(freq-to-note (lyu::virtual-pitch (list (note-to-freq 'c4)
+					(note-to-freq 'e4)
+					(note-to-freq 'g4))))
+=> C2
+|#
+(defpublic virtual-pitch (freqs &optional (weights (mapcar (constantly 1.0) freqs))
+				(delta 0.08) (max-m 12) (max-n 20))
+  (let ((best 0)
+	(best-w -1))
+    (loop for fi in freqs and wi in weights and i from 0 do
+      (loop for m from 1 to max-m
+            for sub = (/ fi m)
+            for w = (loop for fj in freqs for wj in weights for j from 0
+                          for n = (round fj sub)
+                          for gamma = (/ (abs (- (* n sub) fj)) fj)
+                          when (and (/= i j) (<= 1 n max-n) (< gamma delta))
+                            sum (* (sqrt (* (/ wi m) (/ wj n)))
+                                   (- 1 (/ gamma delta))))
+            when (> w best-w) do (setf best-w w best sub)))
+    (values best best-w)))
+
 ;; *** taylor-polynom
 ;;; TODO
 ;;; get taylor polynomial, pls check this again, probably false

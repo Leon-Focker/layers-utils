@@ -849,6 +849,19 @@
 ;;; ****  
   (freq-to-degree freq cm::*chromatic-scale*))
 
+#+cm
+(defpublic freq-to-note (freq)
+  (midi-to-note (freq-to-midi freq)))
+
+#+cm
+(defpublic midi-to-freq (midi-note)
+;;; ****
+  (cm::hertz midi-note :in cm::*chromatic-scale*))
+
+#+cm
+(defpublic note-to-freq (note)
+  (midi-to-freq (note-to-midi note)))
+
 ;; ** cm
 
 #+cm(in-package :cm)
