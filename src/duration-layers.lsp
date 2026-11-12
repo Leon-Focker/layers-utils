@@ -1,6 +1,6 @@
 ;; ** duration-layers
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** duration-layers class
 ;;; a list of lists of durations and some information about it - for example
@@ -81,6 +81,6 @@
 		 :id id
 		 :data data))
 
-(export '(duration-layers how-many generation-method total-duration) :layers-utils)
+(export '(duration-layers how-many generation-method total-duration) :layers-utils/light)
 
 ;;;; EOF duration-layers.lsp

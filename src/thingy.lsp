@@ -1,6 +1,6 @@
 ;; ** thingy
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** thingy
 ;;; as simple as it gets
@@ -11,6 +11,6 @@
 (defmethod print-object ((thy thingy) stream)
   (format stream "<Thingy ~a>" (id thy)))
 
-(export '(thingy id data) :layers-utils)
+(export '(thingy id data) :layers-utils/light)
 
 ;;;; EOF thingy.lsp

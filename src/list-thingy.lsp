@@ -1,6 +1,6 @@
 ;; ** list-thingy
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** list-thingy
 ;;; just a very basic list object with basic methods
@@ -45,7 +45,7 @@
 
 ;; alias
 (setf (symbol-function 'find-with-id) #'get-with-id)
-(export 'find-with-id :layers-utils)
+(export 'find-with-id :layers-utils/light)
 
 ;; *** see-next
 ;;; get next element in a list but don't change the current-slot
@@ -82,6 +82,6 @@
 	     (id lt) (data lt)))
   t)
 
-(export '(list-thingy) :layers-utils)
+(export '(list-thingy) :layers-utils/light)
 
 ;;;; EOF list-thingy.lsp

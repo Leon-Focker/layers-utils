@@ -2,7 +2,7 @@
 ;;; home of morph-patterns and interpolate-patterns - two ways of transitioning
 ;;; from one pattern (any kind of list with numbers) to another
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; ;; *** patterns-to-rhythms-list
 ;; ;;; list of style '((1 1 (1) 1 1 (1)) ((1) 1 1 (1) 1))

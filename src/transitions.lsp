@@ -3,12 +3,12 @@
 ;;; These are intended to use as "control data", for example as a
 ;;; morphing-function in morph-patterns. But of course the sky is the limit.
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** fibonacci-transitions
 (export '(fibonacci-transition fibonacci-partial-transition
 	  fibonacci-transitions)
-	:layers-utils)
+	:layers-utils/light)
 
 ;; *** ~helpers~
 

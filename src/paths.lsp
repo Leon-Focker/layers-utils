@@ -1,10 +1,10 @@
 ;; ** Paths
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 #-wasm
 (defparameter *layers-utils-home-dir*
-  (format nil "~A" (asdf:system-source-directory 'layers-utils)))
+  (format nil "~A" (asdf:system-source-directory 'layers-utils/light)))
 
 #-wasm
 (defparameter *layers-utils-src-dir*
@@ -22,7 +22,7 @@
 (defun layers-utils-path (name)
   (format nil "~a~a" *layers-utils-home-dir* name))
 
-(defun get-pathname-dir (path &optional file)
+(defpublic get-pathname-dir (path &optional file)
   (format nil "~a~a"
           (namestring
            (make-pathname :directory (pathname-directory path)

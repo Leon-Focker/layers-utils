@@ -7,7 +7,7 @@
   :serial t
   :depends-on ((:feature (:not :wasm) "cl-pcg"))
   :pathname "src/"
-  :components ((:file "package")
+  :components ((:file "package-light")
 	       (:file "paths")
 	       (:file "thingy")
 	       (:file "list-thingy")
@@ -33,7 +33,8 @@
   :in-order-to ((test-op (test-op "layers-utils/tests")))
   :serial t
   :pathname "src/"
-  :components ((:file "all")))
+  :components ((:file "Package")
+	       (:file "all")))
 
 ;;; regression tests
 (defsystem #:layers-utils/tests

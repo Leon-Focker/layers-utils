@@ -1,6 +1,6 @@
 ;; ** lindenmayer-ratios
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** scale-nested-to
 ;;; scale all values in the recursive structure to wanted length.

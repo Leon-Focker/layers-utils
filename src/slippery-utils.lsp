@@ -8,7 +8,7 @@
 ;;; Code copied on July 28th 2025,
 ;;; Copied fibonacci-partial-transition on June 27th 2026
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; ** utils
 
@@ -964,7 +964,7 @@
 
 ;; ** fibonacci (without morph)
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;;; ****f* l-for-lookup/fibonacci
 ;;; DESCRIPTION

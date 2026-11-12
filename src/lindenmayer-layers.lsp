@@ -1,6 +1,6 @@
 ;; ** lindenmayer-layers
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** lindenmayer-layers class
 (defclass lindenmayer-layers (duration-layers)
@@ -54,6 +54,6 @@
 		 :total-duration duration
 		 :smallest smallest))
 
-(export '(lindenmayer-layers seed rules ratios smallest) :layers-utils)
+(export '(lindenmayer-layers seed rules ratios smallest) :layers-utils/light)
 
 ;; EOF lindenmayer-layers.lsp

@@ -1,6 +1,6 @@
 ;; ** random
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;; *** random-number
 ;;; stores a fixed-seed pseudo random number and can generate a new one.

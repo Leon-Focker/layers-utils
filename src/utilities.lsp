@@ -1,7 +1,7 @@
 
 ;; ** utilities
 
-(in-package :layers-utils)
+(in-package :layers-utils/light)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                                [ SIMPLE ]                                  ;;;
@@ -48,7 +48,7 @@
 
 ;; alias
 (setf (symbol-function 'random-nldd) #'random-non-linear-distribution-density)
-(export 'random-nldd :layers-utils)
+(export 'random-nldd :layers-utils/light)
 
 ;; *** equal-tempered-multiplier
 ;;; return the multiplier a frequency has to be multiplied with, to get the
@@ -68,6 +68,9 @@
   `(progn
      ,@(loop for var in vars
              collect `(check-type ,var ,type))))
+
+(export 'check-all-types :layers-utils/light)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                                [ LISTS ]                                   ;;;
@@ -111,14 +114,14 @@
   `(progn (push ,value ,place)
 	  (push ,key ,place)))
 
-(export 'push-key-value :layers-utils)
+(export 'push-key-value :layers-utils/light)
 
 ;; *** setf-key-value
 ;;; set key to value in (p)list.
 (defmacro setf-key-value (plist key value)
   `(setf (getf ,plist ,key) ,value))
 
-(export 'setf-key-value :layers-utils)
+(export 'setf-key-value :layers-utils/light)
 
 ;; *** re-order
 ;;; take a list and a new-order as input. The latter should be a list of
@@ -294,7 +297,7 @@
 
 ;; alias
 (setf (symbol-function 'list-to-function) #'make-list-into-function)
-(export 'list-to-function :layers-utils)
+(export 'list-to-function :layers-utils/light)
 
 ;; *** lists-to-envelopes
 ;;; combine a list of x-values and one of y-values into an envelope
@@ -518,7 +521,7 @@
 
 ;; alias
 (setf (symbol-function 'function-to-env) #'make-function-into-env)
-(export 'function-to-env :layers-utils)
+(export 'function-to-env :layers-utils/light)
 
 ;; *** combine-envelopes
 ;;; take a list of envelopes and a list of durations and combine all
