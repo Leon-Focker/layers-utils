@@ -33,7 +33,7 @@
   :in-order-to ((test-op (test-op "layers-utils/tests")))
   :serial t
   :pathname "src/"
-  :components ((:file "Package")
+  :components ((:file "package")
 	       (:file "all")))
 
 ;;; regression tests
